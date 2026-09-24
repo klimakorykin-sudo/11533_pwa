@@ -1,0 +1,811 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<title>Аня</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --bg: #0a0e1a;
+    --cyan: #40e0d0;
+    --amber: #f5b942;
+    --text: #e8f0f5;
+    --dim: rgba(232, 240, 245, 0.45);
+    --faint: rgba(232, 240, 245, 0.18);
+    --card: rgba(64, 224, 208, 0.04);
+    --border: rgba(64, 224, 208, 0.15);
+    --border-hi: rgba(64, 224, 208, 0.5);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(64, 224, 208, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(245, 185, 66, 0.04) 0%, transparent 45%),
+      radial-gradient(ellipse at 50% 50%, #0a0e1a 0%, #05070d 100%);
+    min-height: 100dvh;
+  }
+
+  .bg {
+    position: fixed; inset: 0;
+    overflow: hidden; z-index: 0;
+    pointer-events: none;
+  }
+  .particle {
+    position: absolute; border-radius: 50%;
+    background: var(--cyan); opacity: 0.4;
+    box-shadow: 0 0 6px 1px rgba(64, 224, 208, 0.6);
+    animation: float linear infinite;
+  }
+  .particle.amber {
+    background: var(--amber);
+    box-shadow: 0 0 6px 1px rgba(245, 185, 66, 0.6);
+  }
+  @keyframes float {
+    0%   { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+    10%  { opacity: 0.5; }
+    90%  { opacity: 0.5; }
+    100% { transform: translate3d(var(--dx), var(--dy), 0) scale(0.6); opacity: 0; }
+  }
+
+  .screen {
+    position: relative; z-index: 1;
+    min-height: 100dvh;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hello .name {
+    font-size: clamp(4rem, 16vw, 7rem);
+    font-weight: 200; letter-spacing: 0.08em; line-height: 1;
+    text-shadow:
+      0 0 20px rgba(64, 224, 208, 0.5),
+      0 0 40px rgba(64, 224, 208, 0.25);
+    animation: glow 4s ease-in-out infinite alternate;
+  }
+  @keyframes glow {
+    from { text-shadow: 0 0 20px rgba(64,224,208,0.5), 0 0 40px rgba(64,224,208,0.25); }
+    to   { text-shadow: 0 0 28px rgba(64,224,208,0.75), 0 0 60px rgba(64,224,208,0.4); }
+  }
+  .hello .sub {
+    font-size: 0.75rem; letter-spacing: 0.5em;
+    text-transform: uppercase; color: var(--dim);
+    margin: 1rem 0 4rem;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 1rem 2.6rem;
+    border: 1px solid var(--border-hi); border-radius: 999px;
+    background: var(--card); color: var(--cyan);
+    font-size: 0.95rem; letter-spacing: 0.08em;
+    font-family: inherit; cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .btn:hover, .btn:active {
+    color: #fff;
+    box-shadow: 0 0 30px rgba(64, 224, 208, 0.4);
+    transform: translateY(-1px);
+  }
+
+  .menu .title {
+    font-size: clamp(1.8rem, 7vw, 2.6rem);
+    font-weight: 200; letter-spacing: 0.05em;
+    margin-bottom: 0.6rem;
+    text-shadow: 0 0 20px rgba(64, 224, 208, 0.35);
+  }
+  .menu .date {
+    font-size: 0.75rem; letter-spacing: 0.4em;
+    text-transform: uppercase; color: var(--dim);
+    margin-bottom: 3rem;
+  }
+  .cards {
+    display: grid; gap: 1rem;
+    width: 100%; max-width: 420px;
+  }
+  .card {
+    display: flex; align-items: center; gap: 1.2rem;
+    padding: 1.4rem 1.6rem;
+    border: 1px solid var(--border); border-radius: 20px;
+    background: var(--card); color: var(--text);
+    font-family: inherit; font-size: 1.05rem;
+    text-align: left; cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  .card:hover, .card:active {
+    border-color: var(--border-hi);
+    box-shadow: 0 0 30px rgba(64, 224, 208, 0.18);
+    transform: translateY(-2px);
+  }
+  .card-icon {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 12px;
+    background: rgba(64, 224, 208, 0.08);
+    color: var(--cyan); font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .card-title { font-weight: 400; letter-spacing: 0.02em; display: block; }
+  .card-sub {
+    display: block; font-size: 0.75rem;
+    color: var(--dim); margin-top: 0.25rem;
+    letter-spacing: 0.05em;
+  }
+
+  .inner {
+    justify-content: flex-start;
+    padding-top: 2rem; padding-bottom: 3rem;
+    overflow-y: auto;
+  }
+  .inner-head {
+    width: 100%; max-width: 520px;
+    margin-bottom: 2rem;
+  }
+  .back {
+    background: none; border: none;
+    color: var(--dim); font-size: 0.9rem;
+    font-family: inherit; cursor: pointer;
+    padding: 0.4rem 0; margin-bottom: 1.5rem;
+    letter-spacing: 0.1em; transition: color 0.2s;
+  }
+  .back:hover { color: var(--cyan); }
+  .inner h2 {
+    font-size: clamp(1.6rem, 6vw, 2.2rem);
+    font-weight: 200; letter-spacing: 0.03em;
+    margin-bottom: 0.4rem;
+    text-shadow: 0 0 18px rgba(64, 224, 208, 0.3);
+  }
+  .inner .sub-line {
+    font-size: 0.75rem; letter-spacing: 0.3em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  .content {
+    width: 100%; max-width: 520px;
+  }
+
+  .weather-card {
+    padding: 2rem 1.8rem;
+    border: 1px solid var(--border); border-radius: 24px;
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: center;
+  }
+  .weather-temp {
+    font-size: clamp(3rem, 14vw, 5rem);
+    font-weight: 200; line-height: 1;
+    text-shadow: 0 0 30px rgba(64, 224, 208, 0.5);
+    margin-bottom: 0.5rem;
+  }
+  .weather-desc {
+    font-size: 1rem; color: var(--dim);
+    letter-spacing: 0.1em; margin-bottom: 2rem;
+  }
+  .weather-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .weather-meta {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+  }
+  .weather-meta div {
+    font-size: 0.8rem; color: var(--dim);
+  }
+  .weather-meta strong {
+    display: block; font-size: 1.1rem;
+    color: var(--text); font-weight: 400;
+    margin-top: 0.3rem;
+  }
+  .weather-loading {
+    font-size: 0.9rem; color: var(--dim);
+    letter-spacing: 0.2em; text-transform: uppercase;
+  }
+
+  .notes-area {
+    width: 100%;
+    min-height: 320px;
+    padding: 1.4rem;
+    border: 1px solid var(--border); border-radius: 20px;
+    background: var(--card);
+    color: var(--text);
+    font-family: inherit; font-size: 1rem;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+  .notes-area:focus { border-color: var(--border-hi); }
+  .notes-area::placeholder { color: var(--faint); }
+  .notes-status {
+    margin-top: 0.8rem;
+    font-size: 0.75rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--dim);
+    text-align: right;
+    height: 1em;
+    transition: color 0.3s;
+  }
+  .notes-status.saved { color: var(--cyan); }
+
+  .sounds-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .sound-btn {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 0.6rem;
+    padding: 2rem 1rem;
+    border: 1px solid var(--border); border-radius: 20px;
+    background: var(--card); color: var(--text);
+    font-family: inherit; font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sound-btn:hover { border-color: var(--border-hi); }
+  .sound-btn.active {
+    border-color: var(--cyan);
+    background: rgba(64, 224, 208, 0.1);
+    box-shadow:
+      0 0 30px rgba(64, 224, 208, 0.4),
+      inset 0 0 20px rgba(64, 224, 208, 0.08);
+  }
+  .sound-icon { font-size: 2rem; }
+  .sound-name { letter-spacing: 0.1em; }
+
+  .photo-stage {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.3);
+    margin-bottom: 1rem;
+  }
+  .photo-stage img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: opacity 0.5s;
+  }
+  .photo-caption {
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--dim);
+    letter-spacing: 0.05em;
+    font-style: italic;
+    min-height: 1.5em;
+    margin-bottom: 1.5rem;
+  }
+  .photo-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem;
+  }
+  .photo-nav-btn {
+    flex: 1;
+    padding: 1rem;
+    border: 1px solid var(--border); border-radius: 16px;
+    background: var(--card); color: var(--cyan);
+    font-size: 1.4rem; cursor: pointer;
+    font-family: inherit;
+    transition: all 0.3s;
+  }
+  .photo-nav-btn:hover { border-color: var(--border-hi); }
+  .photo-counter {
+    font-size: 0.8rem; color: var(--dim);
+    letter-spacing: 0.2em;
+    min-width: 60px; text-align: center;
+  }
+
+  @media (max-width: 420px) {
+    .card { padding: 1.2rem 1.3rem; }
+    .sounds-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .particle, .hello .name { animation: none; }
+    .screen { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" id="bg"></div>
+
+<!-- ═══ ПРИВЕТСТВИЕ ═══ -->
+<section class="screen hello active" id="screenHello">
+  <h1 class="name">Аня</h1>
+  <p class="sub">добро пожаловать</p>
+  <button class="btn" onclick="showScreen('menu')">Дальше</button>
+</section>
+
+<!-- ═══ МЕНЮ ═══ -->
+<section class="screen menu" id="screenMenu">
+  <h2 class="title">Сегодня</h2>
+  <p class="date" id="menuDate"></p>
+
+  <div class="cards">
+    <button class="card" onclick="showScreen('weather')">
+      <span class="card-icon">☁</span>
+      <span>
+        <span class="card-title">Погода</span>
+        <span class="card-sub">что там за окном</span>
+      </span>
+    </button>
+
+    <button class="card" onclick="showScreen('notes')">
+      <span class="card-icon">✎</span>
+      <span>
+        <span class="card-title">Заметки</span>
+        <span class="card-sub">только для тебя</span>
+      </span>
+    </button>
+
+    <button class="card" onclick="showScreen('sounds')">
+      <span class="card-icon">♪</span>
+      <span>
+        <span class="card-title">Звуки</span>
+        <span class="card-sub">дождь · ветер · костёр · тишина</span>
+      </span>
+    </button>
+
+    <button class="card" onclick="showScreen('photos')">
+      <span class="card-icon">◆</span>
+      <span>
+        <span class="card-title">Фото</span>
+        <span class="card-sub">твои кадры</span>
+      </span>
+    </button>
+  </div>
+</section>
+
+<!-- ═══ ПОГОДА ═══ -->
+<section class="screen inner" id="screenWeather">
+  <div class="inner-head">
+    <button class="back" onclick="showScreen('menu')">← назад</button>
+    <h2>Погода</h2>
+    <p class="sub-line" id="weatherCity">сегодня</p>
+  </div>
+  <div class="content">
+    <div class="weather-card" id="weatherCard">
+      <p class="weather-loading">загружаю…</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ЗАМЕТКИ ═══ -->
+<section class="screen inner" id="screenNotes">
+  <div class="inner-head">
+    <button class="back" onclick="showScreen('menu')">← назад</button>
+    <h2>Заметки</h2>
+    <p class="sub-line">только для тебя</p>
+  </div>
+  <div class="content">
+    <textarea class="notes-area" id="notesArea"
+      placeholder="Пиши что хочешь. Никто не увидит."></textarea>
+    <div class="notes-status" id="notesStatus"></div>
+  </div>
+</section>
+
+<!-- ═══ ЗВУКИ ═══ -->
+<section class="screen inner" id="screenSounds">
+  <div class="inner-head">
+    <button class="back" onclick="showScreen('menu')">← назад</button>
+    <h2>Звуки</h2>
+    <p class="sub-line">нажми — играет. нажми снова — стоп.</p>
+  </div>
+  <div class="content">
+    <div class="sounds-grid">
+      <button class="sound-btn" data-sound="rain">
+        <span class="sound-icon">☂</span>
+        <span class="sound-name">дождь</span>
+      </button>
+      <button class="sound-btn" data-sound="wind">
+        <span class="sound-icon">≈</span>
+        <span class="sound-name">ветер</span>
+      </button>
+      <button class="sound-btn" data-sound="fire">
+        <span class="sound-icon">◆</span>
+        <span class="sound-name">костёр</span>
+      </button>
+      <button class="sound-btn" data-sound="silence">
+        <span class="sound-icon">◯</span>
+        <span class="sound-name">тишина</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ ФОТО ═══ -->
+<section class="screen inner" id="screenPhotos">
+  <div class="inner-head">
+    <button class="back" onclick="showScreen('menu')">← назад</button>
+    <h2>Фото</h2>
+    <p class="sub-line">твои кадры</p>
+  </div>
+  <div class="content">
+    <div class="photo-stage">
+      <img id="photoImg" src="" alt="">
+    </div>
+    <p class="photo-caption" id="photoCaption"></p>
+    <div class="photo-nav">
+      <button class="photo-nav-btn" onclick="prevPhoto()">←</button>
+      <span class="photo-counter" id="photoCounter">1 / 1</span>
+      <button class="photo-nav-btn" onclick="nextPhoto()">→</button>
+    </div>
+  </div>
+</section>
+
+<script>
+const SCREENS = {
+  hello:   'screenHello',
+  menu:    'screenMenu',
+  weather: 'screenWeather',
+  notes:   'screenNotes',
+  sounds:  'screenSounds',
+  photos:  'screenPhotos'
+};
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+  const el = document.getElementById(SCREENS[name]);
+  if (el) el.classList.add('active');
+  window.scrollTo(0, 0);
+
+  if (name === 'menu')    renderMenuDate();
+  if (name === 'weather') loadWeather();
+  if (name === 'notes')   loadNotes();
+  if (name === 'photos')  renderPhoto();
+  if (name !== 'sounds')  stopAllSounds();
+}
+
+function renderMenuDate() {
+  const d = new Date();
+  const months = ['января','февраля','марта','апреля','мая','июня',
+                  'июля','августа','сентября','октября','ноября','декабря'];
+  const days = ['воскресенье','понедельник','вторник','среда',
+                'четверг','пятница','суббота'];
+  document.getElementById('menuDate').textContent =
+    `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]}`;
+}
+
+const CITY = { name: 'Псков', lat: 57.8192, lon: 28.3318 };
+
+const WEATHER_CODES = {
+  0:  { icon: '☀', desc: 'ясно' },
+  1:  { icon: '☀', desc: 'почти ясно' },
+  2:  { icon: '⛅', desc: 'переменная облачность' },
+  3:  { icon: '☁', desc: 'пасмурно' },
+  45: { icon: '≋', desc: 'туман' },
+  48: { icon: '≋', desc: 'туман с изморозью' },
+  51: { icon: '☂', desc: 'лёгкая морось' },
+  53: { icon: '☂', desc: 'морось' },
+  55: { icon: '☂', desc: 'сильная морось' },
+  61: { icon: '☂', desc: 'небольшой дождь' },
+  63: { icon: '☂', desc: 'дождь' },
+  65: { icon: '☂', desc: 'сильный дождь' },
+  71: { icon: '❄', desc: 'небольшой снег' },
+  73: { icon: '❄', desc: 'снег' },
+  75: { icon: '❄', desc: 'сильный снег' },
+  80: { icon: '☂', desc: 'ливни' },
+  81: { icon: '☂', desc: 'сильные ливни' },
+  82: { icon: '☂', desc: 'очень сильные ливни' },
+  95: { icon: '⚡', desc: 'гроза' }
+};
+
+async function loadWeather() {
+  document.getElementById('weatherCity').textContent = CITY.name;
+
+  const card = document.getElementById('weatherCard');
+  card.innerHTML = '<p class="weather-loading">загружаю…</p>';
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${CITY.lat}&longitude=${CITY.lon}` +
+                `&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code` +
+                `&timezone=auto`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('network');
+    const data = await res.json();
+    const c = data.current;
+    const wc = WEATHER_CODES[c.weather_code] || { icon: '·', desc: '—' };
+
+    card.innerHTML = `
+      <div class="weather-icon">${wc.icon}</div>
+      <div class="weather-temp">${Math.round(c.temperature_2m)}°</div>
+      <div class="weather-desc">${wc.desc}</div>
+      <div class="weather-meta">
+        <div>влажность<strong>${c.relative_humidity_2m}%</strong></div>
+        <div>ветер<strong>${Math.round(c.wind_speed_10m)} м/с</strong></div>
+      </div>
+    `;
+  } catch (e) {
+    card.innerHTML = `
+      <p class="weather-loading">нет связи</p>
+      <p style="margin-top:1rem;color:var(--dim);font-size:0.85rem">
+        проверь интернет и попробуй снова
+      </p>
+    `;
+  }
+}
+
+const NOTES_KEY = 'anya-notes-v1';
+let notesTimer = null;
+
+function loadNotes() {
+  const area = document.getElementById('notesArea');
+  area.value = localStorage.getItem(NOTES_KEY) || '';
+  const status = document.getElementById('notesStatus');
+  status.textContent = '';
+  status.classList.remove('saved');
+
+  area.oninput = () => {
+    clearTimeout(notesTimer);
+    status.textContent = '';
+    status.classList.remove('saved');
+    notesTimer = setTimeout(() => {
+      localStorage.setItem(NOTES_KEY, area.value);
+      status.textContent = 'сохранено';
+      status.classList.add('saved');
+      setTimeout(() => status.classList.remove('saved'), 1500);
+    }, 400);
+  };
+}
+
+let audioCtx = null;
+let activeNodes = [];
+
+function ensureCtx() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function stopAllSounds() {
+  activeNodes.forEach(n => {
+    try { n.stop && n.stop(); } catch(e){}
+    try { n.disconnect && n.disconnect(); } catch(e){}
+  });
+  activeNodes = [];
+  document.querySelectorAll('.sound-btn').forEach(b => b.classList.remove('active'));
+}
+
+function makeNoiseBuffer(ctx, type) {
+  const len = ctx.sampleRate * 2;
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  if (type === 'brown') {
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      last = (last + 0.02 * w) / 1.02;
+      d[i] = last * 3.5;
+    }
+  } else {
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  }
+  return buf;
+}
+
+function playRain(ctx) {
+  const src = ctx.createBufferSource();
+  src.buffer = makeNoiseBuffer(ctx, 'white');
+  src.loop = true;
+
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 4000;
+
+  const hp = ctx.createBiquadFilter();
+  hp.type = 'highpass';
+  hp.frequency.value = 400;
+
+  const gain = ctx.createGain();
+  gain.gain.value = 0.35;
+
+  src.connect(hp).connect(lp).connect(gain).connect(ctx.destination);
+  src.start();
+  return [src];
+}
+
+function playWind(ctx) {
+  const src = ctx.createBufferSource();
+  src.buffer = makeNoiseBuffer(ctx, 'brown');
+  src.loop = true;
+
+  const bp = ctx.createBiquadFilter();
+  bp.type = 'bandpass';
+  bp.frequency.value = 500;
+  bp.Q.value = 0.7;
+
+  const gain = ctx.createGain();
+  gain.gain.value = 0.5;
+
+  const lfo = ctx.createOscillator();
+  lfo.frequency.value = 0.08;
+  const lfoGain = ctx.createGain();
+  lfoGain.gain.value = 300;
+  lfo.connect(lfoGain).connect(bp.frequency);
+  lfo.start();
+
+  src.connect(bp).connect(gain).connect(ctx.destination);
+  src.start();
+  return [src, lfo];
+}
+
+function playFire(ctx) {
+  const src = ctx.createBufferSource();
+  src.buffer = makeNoiseBuffer(ctx, 'brown');
+  src.loop = true;
+
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 800;
+
+  const gain = ctx.createGain();
+  gain.gain.value = 0.25;
+
+  src.connect(lp).connect(gain).connect(ctx.destination);
+  src.start();
+
+  let stopped = false;
+  const nodes = [src];
+  function crackle() {
+    if (stopped) return;
+    const t = ctx.currentTime;
+    const pop = ctx.createBufferSource();
+    pop.buffer = makeNoiseBuffer(ctx, 'white');
+    const popG = ctx.createGain();
+    popG.gain.setValueAtTime(0, t);
+    popG.gain.linearRampToValueAtTime(0.4, t + 0.005);
+    popG.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+    const hp = ctx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 1500;
+    pop.connect(hp).connect(popG).connect(ctx.destination);
+    pop.start(t);
+    pop.stop(t + 0.1);
+    setTimeout(crackle, 200 + Math.random() * 800);
+  }
+  crackle();
+  nodes.stopAll = () => { stopped = true; };
+  return nodes;
+}
+
+function playSilence(ctx) {
+  const src = ctx.createBufferSource();
+  src.buffer = makeNoiseBuffer(ctx, 'brown');
+  src.loop = true;
+
+  const lp = ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.value = 200;
+
+  const gain = ctx.createGain();
+  gain.gain.value = 0.08;
+
+  src.connect(lp).connect(gain).connect(ctx.destination);
+  src.start();
+  return [src];
+}
+
+function toggleSound(btn) {
+  const sound = btn.dataset.sound;
+  const wasActive = btn.classList.contains('active');
+  stopAllSounds();
+  if (wasActive) return;
+
+  const ctx = ensureCtx();
+  let nodes;
+  if (sound === 'rain')    nodes = playRain(ctx);
+  if (sound === 'wind')    nodes = playWind(ctx);
+  if (sound === 'fire')    nodes = playFire(ctx);
+  if (sound === 'silence') nodes = playSilence(ctx);
+  activeNodes = nodes || [];
+  btn.classList.add('active');
+}
+
+document.querySelectorAll('.sound-btn').forEach(btn => {
+  btn.addEventListener('click', () => toggleSound(btn));
+});
+
+const PHOTOS = [
+  { src: 'photos/01.jpg', caption: 'Здесь ты как птица. Такая же свободная и грациозная' },
+  { src: 'photos/02.jpg', caption: 'Ты в последних лучах солнца. Но солнце всегда с тобой. Потому что солнце - это ты' },
+  { src: 'photos/03.jpg', caption: 'Ты в танце. И как всегда неподражаема' },
+  { src: 'photos/04.jpg', caption: 'Здесь ты не просто танцуешь. Здесь ты будто бы играешь героя японских легенд...' },
+  { src: 'photos/05.jpg', caption: 'Стиль времён СССР - это то, что отличает тебя от других' },
+  { src: 'photos/06.jpg', caption: 'Тёплая, уютная, домашняя Аня...😻' }
+];
+
+let photoIdx = 0;
+
+function renderPhoto() {
+  const img = document.getElementById('photoImg');
+  const cap = document.getElementById('photoCaption');
+  const cnt = document.getElementById('photoCounter');
+
+  if (!PHOTOS.length) return;
+  const p = PHOTOS[photoIdx];
+  img.src = p.src;
+  img.alt = p.caption || '';
+  cap.textContent = p.caption || '';
+  cnt.textContent = `${photoIdx + 1} / ${PHOTOS.length}`;
+}
+
+function nextPhoto() {
+  photoIdx = (photoIdx + 1) % PHOTOS.length;
+  renderPhoto();
+}
+function prevPhoto() {
+  photoIdx = (photoIdx - 1 + PHOTOS.length) % PHOTOS.length;
+  renderPhoto();
+}
+
+let touchStartX = 0;
+document.getElementById('screenPhotos').addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+}, { passive: true });
+document.getElementById('screenPhotos').addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  if (Math.abs(dx) > 50) dx < 0 ? nextPhoto() : prevPhoto();
+}, { passive: true });
+
+(function makeParticles() {
+  const bg = document.getElementById('bg');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const count = window.innerWidth < 600 ? 14 : 24;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle' + (Math.random() < 0.3 ? ' amber' : '');
+    const size = 1.5 + Math.random() * 3;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
+    p.style.setProperty('--dy', (-100 - Math.random() * 300) + 'px');
+    p.style.animationDuration = (14 + Math.random() * 18) + 's';
+    p.style.animationDelay = (-Math.random() * 30) + 's';
+    bg.appendChild(p);
+  }
+})();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+renderMenuDate();
+</script>
+</body>
+</html>

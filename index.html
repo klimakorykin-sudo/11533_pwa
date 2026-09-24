@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Аня">
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<title>Аня</title>
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: #0a0e1a;
+    color: #e8f0f5;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', system-ui, sans-serif;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+  }
+
+  .bg {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(64, 224, 208, 0.08) 0%, transparent 55%),
+      radial-gradient(ellipse at 70% 80%, rgba(245, 185, 66, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, #0a0e1a 0%, #05070d 100%);
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: #40e0d0;
+    opacity: 0.6;
+    box-shadow: 0 0 8px 2px rgba(64, 224, 208, 0.7);
+    animation: float linear infinite;
+    will-change: transform;
+  }
+  .particle.amber { background: #f5b942; box-shadow: 0 0 8px 2px rgba(245, 185, 66, 0.7); }
+
+  @keyframes float {
+    0%   { transform: translate3d(0, 0, 0) scale(1);   opacity: 0; }
+    10%  { opacity: 0.7; }
+    90%  { opacity: 0.7; }
+    100% { transform: translate3d(var(--dx), var(--dy), 0) scale(0.6); opacity: 0; }
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem 1.5rem;
+    max-width: 480px;
+    width: 100%;
+    animation: appear 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes appear {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .name {
+    font-size: clamp(3.5rem, 14vw, 6rem);
+    font-weight: 200;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    color: #e8f0f5;
+    text-shadow:
+      0 0 20px rgba(64, 224, 208, 0.5),
+      0 0 40px rgba(64, 224, 208, 0.25),
+      0 0 80px rgba(64, 224, 208, 0.1);
+    margin-bottom: 0.5rem;
+    animation: glow 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { text-shadow:
+      0 0 20px rgba(64, 224, 208, 0.5),
+      0 0 40px rgba(64, 224, 208, 0.25),
+      0 0 80px rgba(64, 224, 208, 0.1); }
+    to   { text-shadow:
+      0 0 25px rgba(64, 224, 208, 0.7),
+      0 0 50px rgba(64, 224, 208, 0.35),
+      0 0 100px rgba(64, 224, 208, 0.15); }
+  }
+
+  .tagline {
+    font-size: 0.85rem;
+    font-weight: 300;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(232, 240, 245, 0.45);
+    margin-bottom: 3.5rem;
+  }
+
+  .install-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    padding: 1.05rem 2.6rem;
+    border: 1px solid rgba(64, 224, 208, 0.4);
+    border-radius: 999px;
+    background: rgba(64, 224, 208, 0.06);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #40e0d0;
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .install-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(64, 224, 208, 0.25), transparent 70%);
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+
+  .install-btn:hover, .install-btn:focus-visible {
+    border-color: rgba(64, 224, 208, 0.9);
+    color: #ffffff;
+    box-shadow:
+      0 0 30px rgba(64, 224, 208, 0.4),
+      0 0 60px rgba(64, 224, 208, 0.15),
+      inset 0 0 20px rgba(64, 224, 208, 0.1);
+    transform: translateY(-2px);
+    outline: none;
+  }
+  .install-btn:hover::before, .install-btn:focus-visible::before { opacity: 1; }
+  .install-btn:active { transform: translateY(0) scale(0.98); }
+  .install-btn svg { width: 1.15em; height: 1.15em; position: relative; z-index: 1; }
+  .install-btn span { position: relative; z-index: 1; }
+
+  .ios-hint {
+    display: none;
+    margin-top: 2rem;
+    padding: 1.2rem 1.5rem;
+    background: rgba(64, 224, 208, 0.04);
+    border: 1px solid rgba(64, 224, 208, 0.2);
+    border-radius: 18px;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: rgba(232, 240, 245, 0.75);
+    text-align: left;
+    animation: appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .ios-hint strong { color: #40e0d0; font-weight: 500; }
+  .ios-hint .share-icon {
+    display: inline-block; vertical-align: middle;
+    width: 1.1em; height: 1.1em; margin: 0 0.2em; fill: #40e0d0;
+  }
+  .ios-hint.show { display: block; }
+
+  .installed-msg {
+    display: none;
+    font-size: 0.95rem;
+    color: rgba(64, 224, 208, 0.8);
+    letter-spacing: 0.05em;
+    animation: appear 0.6s both;
+  }
+  .installed-msg.show { display: block; }
+
+  .footer {
+    position: fixed;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    left: 0; right: 0;
+    text-align: center;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(232, 240, 245, 0.2);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .particle { display: none; }
+    .name, .wrap { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg" id="bg"></div>
+
+<main class="wrap">
+  <h1 class="name">Аня</h1>
+  <p class="tagline">install</p>
+
+  <button class="install-btn" id="installBtn" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 3v14"/>
+      <path d="M6 13l6 6 6-6"/>
+      <path d="M5 21h14"/>
+    </svg>
+    <span>Установить</span>
+  </button>
+
+  <div class="ios-hint" id="iosHint">
+    Чтобы установить: нажми
+    <svg class="share-icon" viewBox="0 0 24 24"><path d="M12 2l-5 5h3v8h4V7h3l-5-5zM5 12v8h14v-8h-2v6H7v-6H5z"/></svg>
+    <strong>Поделиться</strong> внизу экрана → <strong>На экран «Домой»</strong>
+  </div>
+
+  <div class="installed-msg" id="installedMsg">✓ Установлено</div>
+</main>
+
+<div class="footer">anya</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then((reg) => console.log('SW зарегистрирован:', reg.scope))
+      .catch((err) => console.warn('SW не зарегистрирован:', err));
+  });
+}
+
+(function makeParticles() {
+  const bg = document.getElementById('bg');
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const count = window.innerWidth < 600 ? 18 : 30;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle' + (Math.random() < 0.3 ? ' amber' : '');
+    const size = 1.5 + Math.random() * 3;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
+    p.style.setProperty('--dy', (-100 - Math.random() * 300) + 'px');
+    p.style.animationDuration = (12 + Math.random() * 18) + 's';
+    p.style.animationDelay = (-Math.random() * 30) + 's';
+    bg.appendChild(p);
+  }
+})();
+
+const installBtn = document.getElementById('installBtn');
+const iosHint = document.getElementById('iosHint');
+const installedMsg = document.getElementById('installedMsg');
+
+let deferredPrompt = null;
+
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+                   || window.navigator.standalone === true;
+
+if (isStandalone) {
+  installBtn.hidden = true;
+  installedMsg.classList.add('show');
+} else if (isIOS) {
+  installBtn.hidden = true;
+  iosHint.classList.add('show');
+} else {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.hidden = false;
+  });
+  setTimeout(() => {
+    if (installBtn.hidden && !isStandalone) {
+      installBtn.hidden = false;
+      installBtn.querySelector('span').textContent = 'Установить';
+    }
+  }, 1500);
+}
+
+installBtn.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    if (outcome === 'accepted') {
+      installBtn.hidden = true;
+      installedMsg.classList.add('show');
+    }
+  } else {
+    alert('Открой меню браузера → «Установить приложение» / «Добавить на главный экран».');
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  installBtn.hidden = true;
+  installedMsg.classList.add('show');
+});
+</script>
+
+</body>
+</html>
